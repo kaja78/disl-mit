@@ -66,7 +66,8 @@ ${description(pattern.table.description)}$foreignKeyDefinition
 class $pattern.table.name extends ${pattern.parentClassName} {
 
 $columnDefinitions
-}"""
+}
+"""
         }
 
         String getColumnDefinitions() {
