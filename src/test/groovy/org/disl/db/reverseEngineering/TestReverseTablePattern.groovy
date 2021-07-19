@@ -56,7 +56,8 @@ class TestDimensionTable extends AbstractL2Table {
 		@DataType(\"""VARCHAR(200)\""")
 		@NotNull
 		Column NAME
-}"""
+}
+"""
         pattern.execute()
         assertEquals(expectedContent, new File("build/test/l2/TestDimensionTable.groovy").getText())
     }
