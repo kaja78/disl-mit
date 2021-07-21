@@ -1,16 +1,24 @@
+import com.collibra.plugins.java.CollibraJavaPlugin
+
 plugins {
-    id("idea")
     id("groovy")
-    id("java-library-distribution")
-    id("java-test-fixtures")
+    //Collibra Gradle Java plugin
+    // https://bitbucket.collibra.com/projects/DT/repos/gradle-java-plugin/browse
+    id("com.collibra.plugins.java") version "10.3.0"
+    //Collibra Cloud SDK) versioning
+    // https://github.com/collibra/collibra-sdk/blob/master/cloud/README.md
+    // if not applied, project.version is not set -> jars don"t have) versions
+    id("collibra-cloud-sdk-versioning") version "2.5.4"
     id("maven-publish")
-    id("signing")
+    id("java-test-fixtures")
 }
 
-group = "com.github.kaja78"
-version = "1.0-SNAPSHOT"
+tasks.wrapper {
+    distributionUrl = CollibraJavaPlugin.GRADLE_DISTRIBUTION_URL
+    distributionSha256Sum = CollibraJavaPlugin.GRADLE_DISTRIBUTION_SHA256SUM
+}
 
-repositories { mavenCentral() }
+group = "com.collibra.outbound"
 
 dependencies {
     val groovyVersion: String by project
@@ -39,48 +47,26 @@ java {
     targetCompatibility = JavaVersion.VERSION_1_8
     withSourcesJar()
 }
-
-val dislSigning: String by project
-if (dislSigning == "enabled") {
-    signing {
-        sign(configurations.getByName("archives"))
-    }
+collibraJavaConfig {
+    checkstyleEnabled.set(project.hasProperty("sonarqube.token"))
+    sonarqubeToken.set(project.findProperty("sonarqube.token") as String?)
 }
 
+val nexusUserName: String by project
+val nexusPassword: String by project
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
-
-            pom {
-
-                name.set("disl-mit")
-                description.set("disl-mit = data integration specific language published under MIT license. Goal of this project is to implement groovy based domain specific language supporting modelling of data integration projects. Disl will support data modeling and data mapping including support for MDA transformations and unit testing.")
-                url.set("https://github.com/kaja78/disl")
-                licenses {
-                    license {
-                        name.set("MIT")
-                        url.set("https://opensource.org/licenses/MIT")
-                    }
-                }
-                developers {
-                    developer {
-                        name.set("Karel Hübl")
-                        email.set("karel.huebl@gmail.com")
-                        organization.set("Karel Hübl")
-                        organizationUrl.set("https://github.com/kaja78")
-                    }
-                }
-                issueManagement {
-                    system.set("Github")
-                    url.set("https://github.com/kaja78/disl-mit/issues")
-                }
-                scm {
-                    connection.set("scm:git:git@github.com:kaja78/disl-mit.git")
-                    developerConnection.set("scm:git:git@github.com:kaja78/disl-mit.git")
-                    url.set("git:git@github.com:kaja78/disl-mit.git")
-                }
+        }
+    }
+    repositories {
+        maven {
+            credentials {
+                username = nexusUserName
+                password = nexusPassword
             }
+            url = uri("https://nexus.collibra.com/repository/collibra-ci")
         }
     }
 }
