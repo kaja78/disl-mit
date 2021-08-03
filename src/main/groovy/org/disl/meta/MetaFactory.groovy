@@ -58,7 +58,7 @@ class MetaFactory {
         if (typesToCreate.size() == 0) {
             throw new RuntimeException('No classes found!')
         }
-        typesToCreate.collect { create(it) }
+        typesToCreate.sort{it.name}.collect { create(it) }
     }
 
     /**
